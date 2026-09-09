@@ -24,10 +24,10 @@ def reset_form():
         st.session_state.uploader_key = 0
     st.session_state.uploader_key += 1
 
-# دالة تسجيل الخروج الآمنة (دون إسقاط السيرفر)
+# دالة تسجيل الخروج الآمنة
 def logout():
     st.session_state.clear()
-    st.session_state.logged_out = True
+    st.session_state["logged_out"] = True
 
 # التحقق من حالة تسجيل الخروج في بداية التشغيل
 if st.session_state.get("logged_out", False):
@@ -40,7 +40,8 @@ if st.session_state.get("logged_out", False):
     
     st.write("")
     if st.button("🔄 العودة إلى النظام / تسجيل الدخول من جديد", use_container_width=True):
-        st.session_state.logged_out = False
+        st.session_state.clear()
+        st.query_params.clear()
         st.rerun()
     st.stop()
 
