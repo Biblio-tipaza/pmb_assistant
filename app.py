@@ -1,10 +1,8 @@
-import os
-import signal
 import json
+import os
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 import streamlit as st
-import streamlit.components.v1 as components
 from PIL import Image
 import google.generativeai as genai
 
@@ -26,32 +24,25 @@ def reset_form():
         st.session_state.uploader_key = 0
     st.session_state.uploader_key += 1
 
-# دالة تسجيل الخروج الكلي، تفريغ الجلسة، وإيقاف الخادم
+# دالة تسجيل الخروج الآمنة (دون إسقاط السيرفر)
 def logout():
-    # 1. تفريغ كافة بيانات الجلسة والمفاتيح المخزنة
     st.session_state.clear()
+    st.session_state.logged_out = True
+
+# التحقق من حالة تسجيل الخروج في بداية التشغيل
+if st.session_state.get("logged_out", False):
+    st.markdown("""
+    <div style="text-align: center; padding: 50px; background-color: #0E3A43; border-radius: 15px; margin-top: 50px; border: 2px solid #3FE0D0;">
+        <h1 style="color: #ffffff;">🔒 تم تسجيل الخروج بنجاح</h1>
+        <p style="color: #3FE0D0; font-size: 1.2rem;">تم تفريغ كافة البيانات المؤقتة وإغلاق الجلسة بنجاح.</p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    # 2. عرض رسالة إغلاق وتنفيذ كود JavaScript لإغلاق النافذة
-    st.warning("⚠️ تم إغلاق الجلسة وإيقاف النظام بنجاح. يمكنك إغلاق هذه النافذة الآن.")
-    
-    components.html("""
-        <script>
-            // محاولة إغلاق تبويب المتصفح
-            window.close();
-            // في حال منع حامي المتصفح الإغلاق المباشر، يتم عرض شاشة خروج آمنة
-            setTimeout(function() {
-                document.body.innerHTML = `
-                    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background-color:#0E3A43; color:white; font-family:sans-serif; text-align:center;">
-                        <h1 style="font-size:2rem; margin-bottom:10px;">🔒 تم تسجيل الخروج بنجاح</h1>
-                        <p style="font-size:1.2rem; color:#3FE0D0;">تم توقيف الخادم وإغلاق الجلسة بشكل كامل. يمكنك إغلاق التبويب الآن.</p>
-                    </div>
-                `;
-            }, 300);
-        </script>
-    """, height=300)
-    
-    # 3. إيقاف عملية Streamlit فوراً في الخلفية
-    os.kill(os.getpid(), signal.SIGTERM)
+    st.write("")
+    if st.button("🔄 العودة إلى النظام / تسجيل الدخول من جديد", use_container_width=True):
+        st.session_state.logged_out = False
+        st.rerun()
+    st.stop()
 
 # تهيئة المتغيرات عند التشغيل الأول
 if "extracted_data" not in st.session_state:
@@ -216,7 +207,7 @@ st.markdown(f"""
 # شريط علوي يحتوي على زر الخروج المباشر
 top_col1, top_col2 = st.columns([8, 2])
 with top_col2:
-    if st.button("🚪 تسجيل الخروج", use_container_width=True, help="إغلاق النافذة وإيقاف النظام"):
+    if st.button("🚪 تسجيل الخروج", use_container_width=True, help="تفريغ الجلسة الخروج من النظام"):
         logout()
 
 # العنوان الرئيسي
