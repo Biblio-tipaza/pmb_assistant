@@ -6,12 +6,11 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 import os
 
-# إعدادات الصفحة - جعل القائمة الجانبية مغلقة افتراضياً
+# إعدادات الصفحة
 st.set_page_config(
     page_title="المكتبة المركزية لجامعة تيبازة - مساعد الفهرسة لـ PMB",
     page_icon="📚",
-    layout="wide",
-    initial_sidebar_state="collapsed"
+    layout="wide"
 )
 
 # النص في الشريط العلوي الافتراضي
@@ -51,7 +50,7 @@ st.markdown(f"""
         pointer-events: none;
     }}
     
-    /* تغيير ألوان أيقونات الشريط العلوي وزر فتح القائمة الجانبية */
+    /* تغيير ألوان أيقونات الشريط العلوي */
     header[data-testid="stHeader"] * {{
         color: #ffffff !important;
     }}
@@ -68,22 +67,12 @@ st.markdown(f"""
         color: #ffffff;
     }}
     
-    /* القائمة الجانبية وتفادي ظهور النصوص عمودياً عند الإغلاق */
+    /* القائمة الجانبية */
     [data-testid="stSidebar"] {{
         background-color: #14616F;
         color: #ffffff;
     }}
     
-    [data-testid="stSidebar"][aria-expanded="false"] {{
-        margin-left: -21rem !important;
-        margin-right: 0rem !important;
-        overflow: hidden !important;
-    }}
-    
-    [data-testid="stSidebar"][aria-expanded="false"] * {{
-        display: none !important;
-    }}
-
     /* إطار العنوان الرئيسي */
     .main-header-container {{
         display: flex;
@@ -106,7 +95,7 @@ st.markdown(f"""
         font-weight: 800;
     }}
     
-    /* تنسيق أزرار التبويبات (st.tabs) لتصبح أزرار حقيقية */
+    /* تنسيق أزرار التبويبات (st.tabs) لتصبح مثل أزرار حقيقية */
     [data-testid="stTab"] {{
         background-color: #0E424B !important;
         border: 1px solid #3FE0D0 !important;
