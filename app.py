@@ -95,6 +95,41 @@ st.markdown(f"""
         font-weight: 800;
     }}
     
+    /* تنسيق أزرار التبويبات (st.tabs) لتصبح مثل أزرار حقيقية */
+    [data-testid="stTab"] {{
+        background-color: #0E424B !important;
+        border: 1px solid #3FE0D0 !important;
+        border-radius: 8px !important;
+        padding: 8px 16px !important;
+        margin-left: 6px !important;
+        color: #ffffff !important;
+        transition: all 0.3s ease !important;
+    }}
+
+    [data-testid="stTab"] p {{
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
+    }}
+
+    /* التبويب النشط/المحدد */
+    [data-testid="stTab"][aria-selected="true"] {{
+        background-color: #3FE0D0 !important;
+        border-color: #ffffff !important;
+    }}
+
+    [data-testid="stTab"][aria-selected="true"] p {{
+        color: #0E424B !important;
+    }}
+
+    /* إزالة الخط السفلي الافتراضي للـ tabs */
+    [data-testid="stTabs"] [data-baseweb="tab-highlight-title"] {{
+        display: none !important;
+    }}
+    [data-testid="stTabs"] [data-baseweb="tab-border"] {{
+        display: none !important;
+    }}
+
     /* عناوين الحقول والتسميات */
     label, .stMarkdown, p, span {{
         color: #ffffff !important;
@@ -125,7 +160,7 @@ st.markdown(f"""
         border-color: #ffffff !important;
     }}
 
-    /* تحسين عرض صورة الشعار بشكل ناعم وبدون أشرطة زائدة */
+    /* تحسين عرض صورة الشعار */
     [data-testid="stImage"] img {{
         border-radius: 12px;
         border: 2px solid #3FE0D0;
@@ -209,7 +244,7 @@ with col_left:
                 except Exception as e:
                     st.error(f"حدث خطأ أثناء القراءة: {e}")
 
-    # عرض صورة الشعار مباشرة مع حدود أنيقة دون أي أشرطة زائدة
+    # عرض صورة الشعار
     st.write("")
     if os.path.exists("logo.jpg"):
         st.image("logo.jpg", caption="المكتبة المركزية - جامعة تيبازة", use_container_width=True)
