@@ -4,23 +4,38 @@ import google.generativeai as genai
 import json
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
+import os
 
 # إعدادات الصفحة
 st.set_page_config(
-    page_title="مساعد الفهرسة الذكي لـ PMB",
+    page_title="المكتبة المركزية لجامعة تيبازة - مساعد الفهرسة لـ PMB",
     page_icon="📚",
     layout="wide"
 )
 
-# تطبيق التنسيقات المخصصة الضامنة لبروز الأزرار والنصوص
+# تطبيق التنسيقات المخصصة
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
     
     html, body, [class*="css"] {
         font-family: 'Cairo', sans-serif;
         direction: rtl;
         text-align: right;
+    }
+
+    /* شريط العنوان الأعلى (المكان رقم 1) */
+    .top-sub-header {
+        text-align: center;
+        background-color: #0E424B;
+        color: #3FE0D0 !important;
+        font-size: 1.25rem;
+        font-weight: 700;
+        padding: 8px 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid #3FE0D0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
 
     /* خلفية التطبيق الرئيسية */
@@ -54,6 +69,7 @@ st.markdown("""
         color: #ffffff !important;
         font-size: 2.2rem;
         margin: 0;
+        font-weight: 800;
     }
     
     /* عناوين الحقول والتسميات */
@@ -69,7 +85,7 @@ st.markdown("""
         border-radius: 8px !important;
     }
 
-    /* إصلاح ألوان جميع الأزرار وتوضيح نصها */
+    /* إصلاح ألوان جميع الأزرار */
     .stButton button, .stDownloadButton button, [data-testid="stFileUploader"] button {
         background-color: #0E424B !important;
         color: #ffffff !important;
@@ -85,10 +101,25 @@ st.markdown("""
         color: #0E424B !important;
         border-color: #ffffff !important;
     }
+
+    /* تنسيق إطار الشعار في المكان رقم 2 */
+    .logo-box {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #0E424B;
+        border: 2px dashed #3FE0D0;
+        border-radius: 15px;
+        padding: 15px;
+        margin-top: 25px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# عرض العنوان الرئيسي في منتصف الصفحة داخل إطار
+# 1. شريط الإشارة لأعلى الصفحة (المكان رقم 1)
+st.markdown('<div class="top-sub-header">🏛️ المكتبة المركزية لجامعة تيبازة</div>', unsafe_allow_html=True)
+
+# العنوان الرئيسي في منتصف الصفحة
 st.markdown("""
 <div class="main-header-container">
     <div class="main-header">
@@ -162,6 +193,16 @@ with col_left:
                         st.success("✅ تم تحليل كافة الصفحات واستخراج البيانات بنجاح!")
                 except Exception as e:
                     st.error(f"حدث خطأ أثناء القراءة: {e}")
+
+    # 2. عرض صورة الشعار في المكان رقم 2
+    st.markdown('<div class="logo-box">', unsafe_allow_html=True)
+    if os.path.exists("logo.jpg"):
+        st.image("logo.jpg", caption="المكتبة المركزية - جامعة تيبازة", use_container_width=True)
+    elif os.path.exists("11PNG.jpg"):
+        st.image("11PNG.jpg", caption="المكتبة المركزية - جامعة تيبازة", use_container_width=True)
+    else:
+        st.info("💡 قم برفع صورة الشعار باسم `logo.jpg` في المستودع لعرضها هنا.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 extracted_data = st.session_state.extracted_data
 
