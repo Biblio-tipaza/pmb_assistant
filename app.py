@@ -20,10 +20,14 @@ top_bar_text = "المكتبة المركزية لجامعة تيبازة - نظ
 # دالة لإعادة تعيين النموذج لبدء كتاب جديد
 def reset_form():
     st.session_state.extracted_data = {}
-    # تغيير المفتاح الخاص بمركّب رفع الملفات لتفريغه
     if "uploader_key" not in st.session_state:
         st.session_state.uploader_key = 0
     st.session_state.uploader_key += 1
+
+# دالة تسجيل الخروج وتفريغ الجلسة بالكامل
+def logout():
+    st.session_state.clear()
+    st.rerun()
 
 # تهيئة المتغيرات عند التشغيل الأول
 if "extracted_data" not in st.session_state:
@@ -73,7 +77,7 @@ st.markdown(f"""
 
     /* تقليص الهوامش العلوية للصفحة */
     .block-container {{
-        padding-top: 1.5rem !important;
+        padding-top: 1rem !important;
         padding-bottom: 2rem !important;
     }}
 
@@ -94,7 +98,7 @@ st.markdown(f"""
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
     }}
     .main-header {{
         background-color: #0E424B;
@@ -185,6 +189,12 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
+# شريط أدوات علوي يحتوي على زر الخروج
+top_col1, top_col2 = st.columns([8, 2])
+with top_col2:
+    if st.button("🚪 تسجيل الخروج", use_container_width=True, help="تفريغ كافة البيانات وإغلاق الجلسة"):
+        logout()
+
 # العنوان الرئيسي في منتصف الصفحة
 st.markdown("""
 <div class="main-header-container">
@@ -197,15 +207,18 @@ st.markdown("""
 # الشريط الجانبي
 with st.sidebar:
     st.header("⚙️ إعدادات الذكاء الاصطناعي")
-    api_key = st.text_input("أدخل مفتاح Gemini API Key:", type="password")
+    api_key = st.text_input("أدخل مفتاح Gemini API Key:", type="password", key="api_key_input")
     st.info("احصل على مفتاح مجاني من: aistudio.google.com")
+    
+    st.divider()
+    if st.button("🚪 الخروج من النظام", use_container_width=True, key="sidebar_logout"):
+        logout()
 
 col_left, col_right = st.columns([1, 1.2], gap="large")
 
 with col_left:
     st.subheader("🖼️ المسح الضوئي / رفع صور الكتاب")
     
-    # تم استخدام key متغير لإعادة تفريغ رفع الصور عند التصفير
     uploaded_files = st.file_uploader(
         "اختر صور الكتاب (الغلاف، صفحة العنوان، صفحة الحقوق، الفهرس، إلخ):", 
         type=["jpg", "jpeg", "png"],
@@ -260,9 +273,9 @@ with col_left:
                 except Exception as e:
                     st.error(f"حدث خطأ أثناء القراءة: {e}")
 
-    # زر إضافي لتفريغ البيانات جهة اليمين/اليسار أيضاً إذا رغبت
+    # زر تفريغ الصور
     st.write("")
-    if st.button("🔄 إفريغ الصور والبدء من جديد", use_container_width=True, on_click=reset_form):
+    if st.button("🔄 تفريغ الصور والبدء من جديد", use_container_width=True, on_click=reset_form):
         st.toast("تم تفريغ الصور والحقول بنجاح!", icon="🧹")
 
     # عرض صورة الشعار
