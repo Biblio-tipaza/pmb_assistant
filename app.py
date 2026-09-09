@@ -13,19 +13,56 @@ st.set_page_config(
     layout="wide"
 )
 
-# تطبيق التنسيقات المخصصة
-st.markdown("""
+# النص الذي تريد إظهاره في الشريط العلوي الافتراضي
+top_bar_text = "المكتبة المركزية لجامعة تيبازة - نظام الفهرسة الآلي"
+
+# تطبيق التنسيقات المخصصة وتغيير لون الشريط العلوي وإضافة الجملة
+st.markdown(f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
     
-    html, body, [class*="css"] {
+    html, body, [class*="css"] {{
         font-family: 'Cairo', sans-serif;
         direction: rtl;
         text-align: right;
-    }
+    }}
 
-    /* شريط العنوان الأعلى (المكان رقم 1) */
-    .top-sub-header {
+    /* تعديل وتلوين الشريط العلوي الافتراضي لـ Streamlit */
+    header[data-testid="stHeader"] {{
+        background-color: #0E3A43 !important;
+        border-bottom: 1px solid #3FE0D0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        position: relative !important;
+    }}
+    
+    /* إضافة النص المخصص في منتصف الشريط العلوي */
+    header[data-testid="stHeader"]::before {{
+        content: "{top_bar_text}";
+        color: #ffffff;
+        font-size: 1rem;
+        font-weight: 700;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        white-space: nowrap;
+        pointer-events: none;
+    }}
+    
+    /* تغيير ألوان أيقونات الشريط العلوي */
+    header[data-testid="stHeader"] * {{
+        color: #ffffff !important;
+    }}
+
+    /* تقليص الهوامش العلوية للصفحة */
+    .block-container {{
+        padding-top: 1.5rem !important;
+        padding-bottom: 2rem !important;
+    }}
+
+    /* شريط العنوان الأعلى (داخل الصفحة) */
+    .top-sub-header {{
         text-align: center;
         background-color: #0E424B;
         color: #3FE0D0 !important;
@@ -33,60 +70,60 @@ st.markdown("""
         font-weight: 700;
         padding: 8px 20px;
         border-radius: 8px;
-        margin-bottom: 20px;
+        margin-bottom: 15px;
         border: 1px solid #3FE0D0;
         box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
+    }}
 
     /* خلفية التطبيق الرئيسية */
-    .stApp {
+    .stApp {{
         background-color: #1C889B;
         color: #ffffff;
-    }
+    }}
     
     /* القائمة الجانبية */
-    [data-testid="stSidebar"] {
+    [data-testid="stSidebar"] {{
         background-color: #14616F;
         color: #ffffff;
-    }
+    }}
     
     /* إطار العنوان الرئيسي */
-    .main-header-container {
+    .main-header-container {{
         display: flex;
         justify-content: center;
         align-items: center;
         margin-bottom: 2rem;
-    }
-    .main-header {
+    }}
+    .main-header {{
         background-color: #0E424B;
         border: 2px solid #3FE0D0;
         border-radius: 15px;
         padding: 15px 40px;
         text-align: center;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    }
-    .main-header h1 {
+    }}
+    .main-header h1 {{
         color: #ffffff !important;
         font-size: 2.2rem;
         margin: 0;
         font-weight: 800;
-    }
+    }}
     
     /* عناوين الحقول والتسميات */
-    label, .stMarkdown, p, span {
+    label, .stMarkdown, p, span {{
         color: #ffffff !important;
-    }
+    }}
 
-    /* إصلاح ألوان حقول الإدخال لتظهر الكتابة بوضوح */
-    .stTextInput input, .stTextArea textarea {
+    /* ألوان حقول الإدخال */
+    .stTextInput input, .stTextArea textarea {{
         background-color: #ffffff !important;
         color: #000000 !important;
         font-weight: 600 !important;
         border-radius: 8px !important;
-    }
+    }}
 
-    /* إصلاح ألوان جميع الأزرار */
-    .stButton button, .stDownloadButton button, [data-testid="stFileUploader"] button {
+    /* ألوان جميع الأزرار */
+    .stButton button, .stDownloadButton button, [data-testid="stFileUploader"] button {{
         background-color: #0E424B !important;
         color: #ffffff !important;
         border: 1px solid #3FE0D0 !important;
@@ -94,16 +131,16 @@ st.markdown("""
         font-size: 1rem !important;
         border-radius: 8px !important;
         transition: all 0.3s ease !important;
-    }
+    }}
 
-    .stButton button:hover, .stDownloadButton button:hover, [data-testid="stFileUploader"] button:hover {
+    .stButton button:hover, .stDownloadButton button:hover, [data-testid="stFileUploader"] button:hover {{
         background-color: #3FE0D0 !important;
         color: #0E424B !important;
         border-color: #ffffff !important;
-    }
+    }}
 
-    /* تنسيق إطار الشعار في المكان رقم 2 */
-    .logo-box {
+    /* إطار الشعار */
+    .logo-box {{
         display: flex;
         justify-content: center;
         align-items: center;
@@ -112,11 +149,11 @@ st.markdown("""
         border-radius: 15px;
         padding: 15px;
         margin-top: 25px;
-    }
+    }}
 </style>
 """, unsafe_allow_html=True)
 
-# 1. شريط الإشارة لأعلى الصفحة (المكان رقم 1)
+# 1. شريط الإشارة لأعلى الصفحة
 st.markdown('<div class="top-sub-header">🏛️ المكتبة المركزية لجامعة تيبازة</div>', unsafe_allow_html=True)
 
 # العنوان الرئيسي في منتصف الصفحة
