@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 import os
 
-# إعدادات الصفحة - القائمة الجانبية متاحة ومغلقة افتراضياً مع سهم الفتح/الإغلاق
+# إعدادات الصفحة
 st.set_page_config(
     page_title="المكتبة المركزية لجامعة تيبازة - مساعد الفهرسة لـ PMB",
     page_icon="📚",
@@ -16,6 +16,21 @@ st.set_page_config(
 
 # النص في الشريط العلوي الافتراضي
 top_bar_text = "المكتبة المركزية لجامعة تيبازة - نظام الفهرسة الآلي"
+
+# دالة لإعادة تعيين النموذج لبدء كتاب جديد
+def reset_form():
+    st.session_state.extracted_data = {}
+    # تغيير المفتاح الخاص بمركّب رفع الملفات لتفريغه
+    if "uploader_key" not in st.session_state:
+        st.session_state.uploader_key = 0
+    st.session_state.uploader_key += 1
+
+# تهيئة المتغيرات عند التشغيل الأول
+if "extracted_data" not in st.session_state:
+    st.session_state.extracted_data = {}
+
+if "uploader_key" not in st.session_state:
+    st.session_state.uploader_key = 0
 
 # تطبيق التنسيقات المخصصة
 st.markdown(f"""
@@ -179,23 +194,23 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# الشريط الجانبي (سيكون مخفياً افتراضياً ويمكن إظهاره بالضغط على الأيقونة أعلى الصفحة)
+# الشريط الجانبي
 with st.sidebar:
     st.header("⚙️ إعدادات الذكاء الاصطناعي")
     api_key = st.text_input("أدخل مفتاح Gemini API Key:", type="password")
     st.info("احصل على مفتاح مجاني من: aistudio.google.com")
 
-if "extracted_data" not in st.session_state:
-    st.session_state.extracted_data = {}
-
 col_left, col_right = st.columns([1, 1.2], gap="large")
 
 with col_left:
     st.subheader("🖼️ المسح الضوئي / رفع صور الكتاب")
+    
+    # تم استخدام key متغير لإعادة تفريغ رفع الصور عند التصفير
     uploaded_files = st.file_uploader(
         "اختر صور الكتاب (الغلاف، صفحة العنوان، صفحة الحقوق، الفهرس، إلخ):", 
         type=["jpg", "jpeg", "png"],
-        accept_multiple_files=True
+        accept_multiple_files=True,
+        key=f"file_uploader_{st.session_state.uploader_key}"
     )
     
     images = []
@@ -245,6 +260,11 @@ with col_left:
                 except Exception as e:
                     st.error(f"حدث خطأ أثناء القراءة: {e}")
 
+    # زر إضافي لتفريغ البيانات جهة اليمين/اليسار أيضاً إذا رغبت
+    st.write("")
+    if st.button("🔄 إفريغ الصور والبدء من جديد", use_container_width=True, on_click=reset_form):
+        st.toast("تم تفريغ الصور والحقول بنجاح!", icon="🧹")
+
     # عرض صورة الشعار
     st.write("")
     if os.path.exists("logo.jpg"):
@@ -267,24 +287,24 @@ with col_right:
     ])
     
     with tab1:
-        title_val = st.text_input("العنوان الرئيسي (200a)*", value=extracted_data.get("title", ""))
-        subtitle_val = st.text_input("العنوان الفرعي (200e)", value=extracted_data.get("subtitle", ""))
-        isbn_val = st.text_input("الرقم الدولي ISBN (010a)*", value=extracted_data.get("isbn", ""))
-        author_val = st.text_input("المؤلف الرئيسي (200f / 700)", value=extracted_data.get("author", ""))
-        other_author_val = st.text_input("مؤلفون مشاركون / مترجم (701 / 702)", value=extracted_data.get("other_author", ""))
+        title_val = st.text_input("العنوان الرئيسي (200a)*", value=extracted_data.get("title", ""), key=f"title_{st.session_state.uploader_key}")
+        subtitle_val = st.text_input("العنوان الفرعي (200e)", value=extracted_data.get("subtitle", ""), key=f"subtitle_{st.session_state.uploader_key}")
+        isbn_val = st.text_input("الرقم الدولي ISBN (010a)*", value=extracted_data.get("isbn", ""), key=f"isbn_{st.session_state.uploader_key}")
+        author_val = st.text_input("المؤلف الرئيسي (200f / 700)", value=extracted_data.get("author", ""), key=f"author_{st.session_state.uploader_key}")
+        other_author_val = st.text_input("مؤلفون مشاركون / مترجم (701 / 702)", value=extracted_data.get("other_author", ""), key=f"other_{st.session_state.uploader_key}")
 
     with tab2:
-        publisher_val = st.text_input("اسم الناشر (210c)*", value=extracted_data.get("publisher", ""))
-        place_val = st.text_input("مكان النشر (210a)", value=extracted_data.get("place", ""))
-        year_val = st.text_input("سنة النشر (210d)", value=extracted_data.get("year", ""))
+        publisher_val = st.text_input("اسم الناشر (210c)*", value=extracted_data.get("publisher", ""), key=f"pub_{st.session_state.uploader_key}")
+        place_val = st.text_input("مكان النشر (210a)", value=extracted_data.get("place", ""), key=f"place_{st.session_state.uploader_key}")
+        year_val = st.text_input("سنة النشر (210d)", value=extracted_data.get("year", ""), key=f"year_{st.session_state.uploader_key}")
 
     with tab3:
-        pages_val = st.text_input("عدد الصفحات (215a)", value=extracted_data.get("pages", ""))
-        notes_val = st.text_area("ملاحظات عامة والطبعة (300a)", value=extracted_data.get("notes", ""))
+        pages_val = st.text_input("عدد الصفحات (215a)", value=extracted_data.get("pages", ""), key=f"pages_{st.session_state.uploader_key}")
+        notes_val = st.text_area("ملاحظات عامة والطبعة (300a)", value=extracted_data.get("notes", ""), key=f"notes_{st.session_state.uploader_key}")
 
     with tab4:
-        keywords_val = st.text_input("الكلمات المفتاحية / رؤوس الموضوعات (610a)", value=extracted_data.get("keywords", ""))
-        abstract_val = st.text_area("ملخص الكتاب / المستخلص (330a)", value=extracted_data.get("abstract", ""), height=150)
+        keywords_val = st.text_input("الكلمات المفتاحية / رؤوس الموضوعات (610a)", value=extracted_data.get("keywords", ""), key=f"keywords_{st.session_state.uploader_key}")
+        abstract_val = st.text_area("ملخص الكتاب / المستخلص (330a)", value=extracted_data.get("abstract", ""), height=150, key=f"abstract_{st.session_state.uploader_key}")
 
     # تصدير ملف XML
     def generate_unimarc_xml():
@@ -314,10 +334,20 @@ with col_right:
         return xml_str
 
     st.divider()
-    st.download_button(
-        label="📥 تصدير ملف UNIMARC XML لـ PMB",
-        data=generate_unimarc_xml(),
-        file_name="pmb_notice.xml",
-        mime="application/xml",
-        use_container_width=True
-    )
+    
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+        st.download_button(
+            label="📥 تصدير ملف UNIMARC XML لـ PMB",
+            data=generate_unimarc_xml(),
+            file_name="pmb_notice.xml",
+            mime="application/xml",
+            use_container_width=True
+        )
+    with col_btn2:
+        st.button(
+            "➕ إضافة كتاب جديد (تفريغ الحقول)",
+            use_container_width=True,
+            on_click=reset_form,
+            type="secondary"
+        )
