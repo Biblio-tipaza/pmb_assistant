@@ -12,7 +12,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# تطبيق التنسيقات المخصصة (الخلفية، وتوسيط العنوان في إطار)
+# تطبيق التنسيقات المخصصة الضامنة لبروز الأزرار والنصوص
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
@@ -23,19 +23,19 @@ st.markdown("""
         text-align: right;
     }
 
-    /* تغيير لون خلفية التطبيق بالكامل */
+    /* خلفية التطبيق الرئيسية */
     .stApp {
         background-color: #1C889B;
         color: #ffffff;
     }
     
-    /* تنسيق القائمة الجانبية لتتناسب مع المظهر */
+    /* القائمة الجانبية */
     [data-testid="stSidebar"] {
         background-color: #14616F;
         color: #ffffff;
     }
     
-    /* تنسيق العنوان الرئيسي وإطاره وتوسيطه */
+    /* إطار العنوان الرئيسي */
     .main-header-container {
         display: flex;
         justify-content: center;
@@ -51,13 +51,39 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     }
     .main-header h1 {
-        color: #ffffff;
+        color: #ffffff !important;
         font-size: 2.2rem;
         margin: 0;
     }
     
+    /* عناوين الحقول والتسميات */
     label, .stMarkdown, p, span {
         color: #ffffff !important;
+    }
+
+    /* إصلاح ألوان حقول الإدخال لتظهر الكتابة بوضوح */
+    .stTextInput input, .stTextArea textarea {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        font-weight: 600 !important;
+        border-radius: 8px !important;
+    }
+
+    /* إصلاح ألوان جميع الأزرار وتوضيح نصها */
+    .stButton button, .stDownloadButton button, [data-testid="stFileUploader"] button {
+        background-color: #0E424B !important;
+        color: #ffffff !important;
+        border: 1px solid #3FE0D0 !important;
+        font-weight: bold !important;
+        font-size: 1rem !important;
+        border-radius: 8px !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .stButton button:hover, .stDownloadButton button:hover, [data-testid="stFileUploader"] button:hover {
+        background-color: #3FE0D0 !important;
+        color: #0E424B !important;
+        border-color: #ffffff !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -107,7 +133,7 @@ with col_left:
                 try:
                     with st.spinner("جاري قراءة جميع الصفحات المرفوعة ومطابقة البيانات الببليوغرافية..."):
                         genai.configure(api_key=api_key)
-                        model = genai.GenerativeModel('gemini-3.6-flash')
+                        model = genai.GenerativeModel('gemini-2.5-flash')
                         
                         prompt = """
                         قم بتحليل كافة الصور المرفوعة لهذا الكتاب (غلاف، صفحة عنوان، صفحة حقوق، مقدمة، فهرس) واستخرج الحقول التالية بصيغة JSON نقية فقط:
