@@ -11,7 +11,7 @@ st.set_page_config(
     page_title="المكتبة المركزية لجامعة تيبازة - مساعد الفهرسة لـ PMB",
     page_icon="📚",
     layout="wide",
-    initial_sidebar_state="collapsed"  # تجعل القائمة الجانبية مخفية افتراضياً مع إمكانية فتحها بالسهم
+    initial_sidebar_state="collapsed"
 )
 
 # النص في الشريط العلوي الافتراضي
@@ -68,12 +68,22 @@ st.markdown(f"""
         color: #ffffff;
     }}
     
-    /* القائمة الجانبية */
+    /* القائمة الجانبية وتفادي ظهور النصوص عمودياً عند الإغلاق */
     [data-testid="stSidebar"] {{
         background-color: #14616F;
         color: #ffffff;
     }}
     
+    [data-testid="stSidebar"][aria-expanded="false"] {{
+        margin-left: -21rem !important;
+        margin-right: 0rem !important;
+        overflow: hidden !important;
+    }}
+    
+    [data-testid="stSidebar"][aria-expanded="false"] * {{
+        display: none !important;
+    }}
+
     /* إطار العنوان الرئيسي */
     .main-header-container {{
         display: flex;
@@ -179,7 +189,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# الشريط الجانبي (سيكون مخفياً افتراضياً ويمكن إظهاره بالضغط على الأيقونة في أعلى الصفحة)
+# الشريط الجانبي
 with st.sidebar:
     st.header("⚙️ إعدادات الذكاء الاصطناعي")
     api_key = st.text_input("أدخل مفتاح Gemini API Key:", type="password")
