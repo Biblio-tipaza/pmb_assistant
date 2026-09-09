@@ -6,11 +6,12 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 import os
 
-# إعدادات الصفحة
+# إعدادات الصفحة - القائمة الجانبية متاحة ومغلقة افتراضياً مع سهم الفتح/الإغلاق
 st.set_page_config(
     page_title="المكتبة المركزية لجامعة تيبازة - مساعد الفهرسة لـ PMB",
     page_icon="📚",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
 # النص في الشريط العلوي الافتراضي
@@ -50,7 +51,7 @@ st.markdown(f"""
         pointer-events: none;
     }}
     
-    /* تغيير ألوان أيقونات الشريط العلوي */
+    /* تغيير ألوان أيقونات الشريط العلوي وزر فتح القائمة الجانبية */
     header[data-testid="stHeader"] * {{
         color: #ffffff !important;
     }}
@@ -95,7 +96,7 @@ st.markdown(f"""
         font-weight: 800;
     }}
     
-    /* تنسيق أزرار التبويبات (st.tabs) لتصبح مثل أزرار حقيقية */
+    /* تنسيق أزرار التبويبات (st.tabs) لتصبح أزرار حقيقية */
     [data-testid="stTab"] {{
         background-color: #0E424B !important;
         border: 1px solid #3FE0D0 !important;
@@ -178,7 +179,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# الشريط الجانبي
+# الشريط الجانبي (سيكون مخفياً افتراضياً ويمكن إظهاره بالضغط على الأيقونة أعلى الصفحة)
 with st.sidebar:
     st.header("⚙️ إعدادات الذكاء الاصطناعي")
     api_key = st.text_input("أدخل مفتاح Gemini API Key:", type="password")
