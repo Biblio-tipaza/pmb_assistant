@@ -13,10 +13,10 @@ st.set_page_config(
     layout="wide"
 )
 
-# النص الذي تريد إظهاره في الشريط العلوي الافتراضي
+# النص في الشريط العلوي الافتراضي
 top_bar_text = "المكتبة المركزية لجامعة تيبازة - نظام الفهرسة الآلي"
 
-# تطبيق التنسيقات المخصصة وتغيير لون الشريط العلوي وإضافة الجملة
+# تطبيق التنسيقات المخصصة
 st.markdown(f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
@@ -59,20 +59,6 @@ st.markdown(f"""
     .block-container {{
         padding-top: 1.5rem !important;
         padding-bottom: 2rem !important;
-    }}
-
-    /* شريط العنوان الأعلى (داخل الصفحة) */
-    .top-sub-header {{
-        text-align: center;
-        background-color: #0E424B;
-        color: #3FE0D0 !important;
-        font-size: 1.25rem;
-        font-weight: 700;
-        padding: 8px 20px;
-        border-radius: 8px;
-        margin-bottom: 15px;
-        border: 1px solid #3FE0D0;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }}
 
     /* خلفية التطبيق الرئيسية */
@@ -139,22 +125,14 @@ st.markdown(f"""
         border-color: #ffffff !important;
     }}
 
-    /* إطار الشعار */
-    .logo-box {{
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background-color: #0E424B;
-        border: 2px dashed #3FE0D0;
-        border-radius: 15px;
-        padding: 15px;
-        margin-top: 25px;
+    /* تحسين عرض صورة الشعار بشكل ناعم وبدون أشرطة زائدة */
+    [data-testid="stImage"] img {{
+        border-radius: 12px;
+        border: 2px solid #3FE0D0;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     }}
 </style>
 """, unsafe_allow_html=True)
-
-# 1. شريط الإشارة لأعلى الصفحة
-st.markdown('<div class="top-sub-header">🏛️ المكتبة المركزية لجامعة تيبازة</div>', unsafe_allow_html=True)
 
 # العنوان الرئيسي في منتصف الصفحة
 st.markdown("""
@@ -231,15 +209,14 @@ with col_left:
                 except Exception as e:
                     st.error(f"حدث خطأ أثناء القراءة: {e}")
 
-    # 2. عرض صورة الشعار في المكان رقم 2
-    st.markdown('<div class="logo-box">', unsafe_allow_html=True)
+    # عرض صورة الشعار مباشرة مع حدود أنيقة دون أي أشرطة زائدة
+    st.write("")
     if os.path.exists("logo.jpg"):
         st.image("logo.jpg", caption="المكتبة المركزية - جامعة تيبازة", use_container_width=True)
     elif os.path.exists("11PNG.jpg"):
         st.image("11PNG.jpg", caption="المكتبة المركزية - جامعة تيبازة", use_container_width=True)
     else:
         st.info("💡 قم برفع صورة الشعار باسم `logo.jpg` في المستودع لعرضها هنا.")
-    st.markdown('</div>', unsafe_allow_html=True)
 
 extracted_data = st.session_state.extracted_data
 
