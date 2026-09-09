@@ -1,10 +1,12 @@
-import streamlit as st
-from PIL import Image
-import google.generativeai as genai
+import os
+import signal
 import json
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
-import os
+import streamlit as st
+import streamlit.components.v1 as components
+from PIL import Image
+import google.generativeai as genai
 
 # إعدادات الصفحة
 st.set_page_config(
@@ -24,10 +26,32 @@ def reset_form():
         st.session_state.uploader_key = 0
     st.session_state.uploader_key += 1
 
-# دالة تسجيل الخروج وتفريغ الجلسة بالكامل
+# دالة تسجيل الخروج الكلي، تفريغ الجلسة، وإيقاف الخادم
 def logout():
+    # 1. تفريغ كافة بيانات الجلسة والمفاتيح المخزنة
     st.session_state.clear()
-    st.rerun()
+    
+    # 2. عرض رسالة إغلاق وتنفيذ كود JavaScript لإغلاق النافذة
+    st.warning("⚠️ تم إغلاق الجلسة وإيقاف النظام بنجاح. يمكنك إغلاق هذه النافذة الآن.")
+    
+    components.html("""
+        <script>
+            // محاولة إغلاق تبويب المتصفح
+            window.close();
+            // في حال منع حامي المتصفح الإغلاق المباشر، يتم عرض شاشة خروج آمنة
+            setTimeout(function() {
+                document.body.innerHTML = `
+                    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background-color:#0E3A43; color:white; font-family:sans-serif; text-align:center;">
+                        <h1 style="font-size:2rem; margin-bottom:10px;">🔒 تم تسجيل الخروج بنجاح</h1>
+                        <p style="font-size:1.2rem; color:#3FE0D0;">تم توقيف الخادم وإغلاق الجلسة بشكل كامل. يمكنك إغلاق التبويب الآن.</p>
+                    </div>
+                `;
+            }, 300);
+        </script>
+    """, height=300)
+    
+    # 3. إيقاف عملية Streamlit فوراً في الخلفية
+    os.kill(os.getpid(), signal.SIGTERM)
 
 # تهيئة المتغيرات عند التشغيل الأول
 if "extracted_data" not in st.session_state:
@@ -189,13 +213,13 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
-# شريط أدوات علوي يحتوي على زر الخروج
+# شريط علوي يحتوي على زر الخروج المباشر
 top_col1, top_col2 = st.columns([8, 2])
 with top_col2:
-    if st.button("🚪 تسجيل الخروج", use_container_width=True, help="تفريغ كافة البيانات وإغلاق الجلسة"):
+    if st.button("🚪 تسجيل الخروج", use_container_width=True, help="إغلاق النافذة وإيقاف النظام"):
         logout()
 
-# العنوان الرئيسي في منتصف الصفحة
+# العنوان الرئيسي
 st.markdown("""
 <div class="main-header-container">
     <div class="main-header">
@@ -204,7 +228,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# الشريط الجانبي
+# الشريط الجانبي (Sidebar)
 with st.sidebar:
     st.header("⚙️ إعدادات الذكاء الاصطناعي")
     api_key = st.text_input("أدخل مفتاح Gemini API Key:", type="password", key="api_key_input")
@@ -319,7 +343,7 @@ with col_right:
         keywords_val = st.text_input("الكلمات المفتاحية / رؤوس الموضوعات (610a)", value=extracted_data.get("keywords", ""), key=f"keywords_{st.session_state.uploader_key}")
         abstract_val = st.text_area("ملخص الكتاب / المستخلص (330a)", value=extracted_data.get("abstract", ""), height=150, key=f"abstract_{st.session_state.uploader_key}")
 
-    # تصدير ملف XML
+    # تصدير ملف UNIMARC XML
     def generate_unimarc_xml():
         root = ET.Element("unimarc")
         notice = ET.SubElement(root, "notice")
