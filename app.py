@@ -234,7 +234,7 @@ with col_left:
         use_container_width=True,
     ):
       if not api_key:
-        st.error("⚠️ يرجى إدخل مفتاح Gemini API في الشريط الجانبي أولاً.")
+        st.error("⚠️ يرجى إدخال مفتاح Gemini API في الشريط الجانبي أولاً.")
       else:
         try:
           with st.spinner(
@@ -243,8 +243,9 @@ with col_left:
           ):
             genai.configure(api_key=api_key)
 
+            # استخدام الاصدار المعتمد حديثاً gemini-3.6-flash
             model = genai.GenerativeModel(
-                "gemini-2.5-flash",
+                "gemini-3.6-flash",
                 generation_config={"response_mime_type": "application/json"},
             )
 
@@ -273,7 +274,7 @@ with col_left:
             data = json.loads(response.text.strip())
             st.session_state.extracted_data = data
 
-            # ربط المستخرجات مباشرة بمفاتيح المكونات
+            # حقن المستخرجات مباشرة داخل مفاتيح العناصر
             k = st.session_state.uploader_key
             st.session_state[f"title_{k}"] = data.get("title", "")
             st.session_state[f"subtitle_{k}"] = data.get("subtitle", "")
