@@ -113,7 +113,7 @@ st.markdown(
         font-weight: 800;
     }}
     
-    /* تنسيق أزرار التبويبات (st.tabs) لتصبح أزرار حقيقية */
+    /* تنسيق أزرار التبويبات (st.tabs) */
     [data-testid="stTab"] {{
         background-color: #0E424B !important;
         border: 1px solid #3FE0D0 !important;
@@ -140,7 +140,6 @@ st.markdown(
         color: #0E424B !important;
     }}
 
-    /* إزالة الخط السفلي الافتراضي للـ tabs */
     [data-testid="stTabs"] [data-baseweb="tab-highlight-title"] {{
         display: none !important;
     }}
@@ -161,7 +160,7 @@ st.markdown(
         border-radius: 8px !important;
     }}
 
-    /* ألوان جميع الأزرار */
+    /* ألوان الأزرار */
     .stButton button, .stDownloadButton button, [data-testid="stFileUploader"] button {{
         background-color: #0E424B !important;
         color: #ffffff !important;
@@ -178,7 +177,7 @@ st.markdown(
         border-color: #ffffff !important;
     }}
 
-    /* تحسين عرض صورة الشعار */
+    /* تحسين عرض الشعار */
     [data-testid="stImage"] img {{
         border-radius: 12px;
         border: 2px solid #3FE0D0;
@@ -189,7 +188,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# العنوان الرئيسي في منتصف الصفحة
+# العنوان الرئيسي
 st.markdown(
     """
 <div class="main-header-container">
@@ -235,7 +234,7 @@ with col_left:
         use_container_width=True,
     ):
       if not api_key:
-        st.error("⚠️ يرجى إدخال مفتاح Gemini API في الشريط الجانبي أولاً.")
+        st.error("⚠️ يرجى إدخل مفتاح Gemini API في الشريط الجانبي أولاً.")
       else:
         try:
           with st.spinner(
@@ -244,7 +243,6 @@ with col_left:
           ):
             genai.configure(api_key=api_key)
 
-            # إجبار النموذج على إخراج JSON صافي
             model = genai.GenerativeModel(
                 "gemini-2.5-flash",
                 generation_config={"response_mime_type": "application/json"},
@@ -272,13 +270,25 @@ with col_left:
             content_payload = [prompt] + images
             response = model.generate_content(content_payload)
 
-            # استخراج النتيجة وتحديث الجلسة
-            st.session_state.extracted_data = json.loads(
-                response.text.strip()
-            )
-            st.success("✅ تم تحليل كافة الصفحات واستخراج البيانات بنجاح!")
+            data = json.loads(response.text.strip())
+            st.session_state.extracted_data = data
 
-            # إعادة تنشيط الصفحة تلقائياً لملء الحقول بالمستخرجات
+            # ربط المستخرجات مباشرة بمفاتيح المكونات
+            k = st.session_state.uploader_key
+            st.session_state[f"title_{k}"] = data.get("title", "")
+            st.session_state[f"subtitle_{k}"] = data.get("subtitle", "")
+            st.session_state[f"isbn_{k}"] = data.get("isbn", "")
+            st.session_state[f"author_{k}"] = data.get("author", "")
+            st.session_state[f"other_{k}"] = data.get("other_author", "")
+            st.session_state[f"pub_{k}"] = data.get("publisher", "")
+            st.session_state[f"place_{k}"] = data.get("place", "")
+            st.session_state[f"year_{k}"] = data.get("year", "")
+            st.session_state[f"pages_{k}"] = data.get("pages", "")
+            st.session_state[f"notes_{k}"] = data.get("notes", "")
+            st.session_state[f"keywords_{k}"] = data.get("keywords", "")
+            st.session_state[f"abstract_{k}"] = data.get("abstract", "")
+
+            st.success("✅ تم تحليل كافة الصفحات واستخراج البيانات بنجاح!")
             st.rerun()
 
         except Exception as e:
@@ -305,12 +315,6 @@ with col_left:
         caption="المكتبة المركزية - جامعة تيبازة",
         use_container_width=True,
     )
-  else:
-    st.info(
-        "💡 قم برفع صورة الشعار باسم `logo.jpg` في المستودع لعرضها هنا."
-    )
-
-extracted_data = st.session_state.extracted_data
 
 with col_right:
   st.subheader("📋 حقول التحقق المطابقة لـ PMB")
@@ -322,76 +326,37 @@ with col_right:
       "4️⃣ التحليل الموضوعي",
   ])
 
+  k = st.session_state.uploader_key
+
   with tab1:
-    title_val = st.text_input(
-        "العنوان الرئيسي (200a)*",
-        value=extracted_data.get("title", ""),
-        key=f"title_{st.session_state.uploader_key}",
-    )
-    subtitle_val = st.text_input(
-        "العنوان الفرعي (200e)",
-        value=extracted_data.get("subtitle", ""),
-        key=f"subtitle_{st.session_state.uploader_key}",
-    )
-    isbn_val = st.text_input(
-        "الرقم الدولي ISBN (010a)*",
-        value=extracted_data.get("isbn", ""),
-        key=f"isbn_{st.session_state.uploader_key}",
-    )
+    title_val = st.text_input("العنوان الرئيسي (200a)*", key=f"title_{k}")
+    subtitle_val = st.text_input("العنوان الفرعي (200e)", key=f"subtitle_{k}")
+    isbn_val = st.text_input("الرقم الدولي ISBN (010a)*", key=f"isbn_{k}")
     author_val = st.text_input(
-        "المؤلف الرئيسي (200f / 700)",
-        value=extracted_data.get("author", ""),
-        key=f"author_{st.session_state.uploader_key}",
+        "المؤلف الرئيسي (200f / 700)", key=f"author_{k}"
     )
     other_author_val = st.text_input(
-        "مؤلفون مشاركون / مترجم (701 / 702)",
-        value=extracted_data.get("other_author", ""),
-        key=f"other_{st.session_state.uploader_key}",
+        "مؤلفون مشاركون / مترجم (701 / 702)", key=f"other_{k}"
     )
 
   with tab2:
-    publisher_val = st.text_input(
-        "اسم الناشر (210c)*",
-        value=extracted_data.get("publisher", ""),
-        key=f"pub_{st.session_state.uploader_key}",
-    )
-    place_val = st.text_input(
-        "مكان النشر (210a)",
-        value=extracted_data.get("place", ""),
-        key=f"place_{st.session_state.uploader_key}",
-    )
-    year_val = st.text_input(
-        "سنة النشر (210d)",
-        value=extracted_data.get("year", ""),
-        key=f"year_{st.session_state.uploader_key}",
-    )
+    publisher_val = st.text_input("اسم الناشر (210c)*", key=f"pub_{k}")
+    place_val = st.text_input("مكان النشر (210a)", key=f"place_{k}")
+    year_val = st.text_input("سنة النشر (210d)", key=f"year_{k}")
 
   with tab3:
-    pages_val = st.text_input(
-        "عدد الصفحات (215a)",
-        value=extracted_data.get("pages", ""),
-        key=f"pages_{st.session_state.uploader_key}",
-    )
-    notes_val = st.text_area(
-        "ملاحظات عامة والطبعة (300a)",
-        value=extracted_data.get("notes", ""),
-        key=f"notes_{st.session_state.uploader_key}",
-    )
+    pages_val = st.text_input("عدد الصفحات (215a)", key=f"pages_{k}")
+    notes_val = st.text_area("ملاحظات عامة والطبعة (300a)", key=f"notes_{k}")
 
   with tab4:
     keywords_val = st.text_input(
-        "الكلمات المفتاحية / رؤوس الموضوعات (610a)",
-        value=extracted_data.get("keywords", ""),
-        key=f"keywords_{st.session_state.uploader_key}",
+        "الكلمات المفتاحية / رؤوس الموضوعات (610a)", key=f"keywords_{k}"
     )
     abstract_val = st.text_area(
-        "ملخص الكتاب / المستخلص (330a)",
-        value=extracted_data.get("abstract", ""),
-        height=150,
-        key=f"abstract_{st.session_state.uploader_key}",
+        "ملخص الكتاب / المستخلص (330a)", height=150, key=f"abstract_{k}"
     )
 
-  # تصدير ملف XML
+  # تصدير ملف UNIMARC XML
   def generate_unimarc_xml():
     root = ET.Element("unimarc")
     notice = ET.SubElement(root, "notice")
