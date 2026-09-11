@@ -73,10 +73,10 @@ st.markdown(
         color: #ffffff !important;
     }}
 
-    /* تقليص الهوامش العلوية للصفحة لتوفير المساحة */
+    /* تقليص الهوامش العلوية وزيادة الهامش السفلي (5rem) لإتاحة المساحة لرؤية الأزرار عند التمرير */
     .block-container {{
         padding-top: 1rem !important;
-        padding-bottom: 1rem !important;
+        padding-bottom: 5rem !important;
     }}
 
     /* خلفية التطبيق الرئيسية */
@@ -185,6 +185,12 @@ st.markdown(
         max-height: 80px;
         object-fit: contain;
     }}
+
+    /* فئة خاصة لإضافة مساحة فارغة في أسفل الصفحة قدرها 2 سم */
+    .bottom-spacer {{
+        height: 2cm;
+        width: 100%;
+    }}
 </style>
 """,
     unsafe_allow_html=True,
@@ -194,7 +200,6 @@ st.markdown(
 header_col1, header_col2 = st.columns([0.6, 4], gap="small")
 
 with header_col1:
-  # تم تحجيم عرض الشعار إلى 110 بكسل لتوفير المساحة
   if os.path.exists("logo.jpg"):
     st.image("logo.jpg", width=110)
   elif os.path.exists("11PNG.jpg"):
@@ -384,7 +389,7 @@ with col_right:
 
   st.write("")
 
-  # --- إعادة الأزرار إلى الأسفل هنا ---
+  # --- الأزرار في الأسفل ---
   col_btn1, col_btn2 = st.columns(2)
   with col_btn1:
     st.download_button(
@@ -401,3 +406,6 @@ with col_right:
         on_click=reset_form,
         type="secondary",
     )
+
+# --- إضافة مسافة فارغة أسفل الصفحة بقدر 2 سم لإكمال التمرير بحرية ---
+st.markdown('<div class="bottom-spacer"></div>', unsafe_allow_html=True)
