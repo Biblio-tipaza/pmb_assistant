@@ -73,10 +73,10 @@ st.markdown(
         color: #ffffff !important;
     }}
 
-    /* تقليص الهوامش العلوية للصفحة */
+    /* تقليص الهوامش العلوية للصفحة لتوفير المساحة */
     .block-container {{
-        padding-top: 1.5rem !important;
-        padding-bottom: 2rem !important;
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
     }}
 
     /* خلفية التطبيق الرئيسية */
@@ -96,20 +96,20 @@ st.markdown(
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-bottom: 1rem;
+        margin-bottom: 0.5rem;
     }}
     .main-header {{
         background-color: #0E424B;
         border: 2px solid #3FE0D0;
-        border-radius: 15px;
-        padding: 15px 30px;
+        border-radius: 12px;
+        padding: 10px 20px;
         text-align: center;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         width: 100%;
     }}
     .main-header h1 {{
         color: #ffffff !important;
-        font-size: 2rem;
+        font-size: 1.8rem;
         margin: 0;
         font-weight: 800;
     }}
@@ -119,8 +119,8 @@ st.markdown(
         background-color: #0E424B !important;
         border: 1px solid #3FE0D0 !important;
         border-radius: 8px !important;
-        padding: 8px 16px !important;
-        margin-left: 6px !important;
+        padding: 6px 12px !important;
+        margin-left: 4px !important;
         color: #ffffff !important;
         transition: all 0.3s ease !important;
     }}
@@ -128,7 +128,7 @@ st.markdown(
     [data-testid="stTab"] p {{
         color: #ffffff !important;
         font-weight: 700 !important;
-        font-size: 0.95rem !important;
+        font-size: 0.9rem !important;
     }}
 
     /* التبويب النشط/المحدد */
@@ -167,7 +167,7 @@ st.markdown(
         color: #ffffff !important;
         border: 1px solid #3FE0D0 !important;
         font-weight: bold !important;
-        font-size: 1rem !important;
+        font-size: 0.95rem !important;
         border-radius: 8px !important;
         transition: all 0.3s ease !important;
     }}
@@ -178,25 +178,27 @@ st.markdown(
         border-color: #ffffff !important;
     }}
 
-    /* تحسين عرض الشعار */
-    [data-testid="stImage"] img {{
-        border-radius: 12px;
+    /* تحسين عرض الشعار المقلص */
+    .small-logo img {{
+        border-radius: 10px;
         border: 2px solid #3FE0D0;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        max-height: 80px;
+        object-fit: contain;
     }}
 </style>
 """,
     unsafe_allow_html=True,
 )
 
-# --- الهيدر العلوي: إطار العنوان وبجانبه الشعار في الأعلى ---
-header_col1, header_col2 = st.columns([1, 4], gap="medium")
+# --- الهيدر العلوي: تقليص حجم الشعار مع إطار العنوان ---
+header_col1, header_col2 = st.columns([0.6, 4], gap="small")
 
 with header_col1:
+  # تم تحجيم عرض الشعار إلى 110 بكسل لتوفير المساحة
   if os.path.exists("logo.jpg"):
-    st.image("logo.jpg", use_container_width=True)
+    st.image("logo.jpg", width=110)
   elif os.path.exists("11PNG.jpg"):
-    st.image("11PNG.jpg", use_container_width=True)
+    st.image("11PNG.jpg", width=110)
 
 with header_col2:
   st.markdown(
@@ -314,62 +316,14 @@ with col_left:
 with col_right:
   st.subheader("📋 حقول التحقق المطابقة لـ PMB")
 
-  k = st.session_state.uploader_key
-
-  # تعريف دالة التصدير قبل استخدامها في الأزرار العلوية
-  def generate_unimarc_xml():
-    root = ET.Element("unimarc")
-    notice = ET.SubElement(root, "notice")
-
-    def add_field(tag, code, value):
-      if value:
-        f = ET.SubElement(notice, "field", tag=tag)
-        s = ET.SubElement(f, "subfield", code=code)
-        s.text = str(value)
-
-    add_field("200", "a", st.session_state.get(f"title_{k}", ""))
-    add_field("200", "e", st.session_state.get(f"subtitle_{k}", ""))
-    add_field("010", "a", st.session_state.get(f"isbn_{k}", ""))
-    add_field("200", "f", st.session_state.get(f"author_{k}", ""))
-    add_field("701", "a", st.session_state.get(f"other_{k}", ""))
-    add_field("210", "c", st.session_state.get(f"pub_{k}", ""))
-    add_field("210", "a", st.session_state.get(f"place_{k}", ""))
-    add_field("210", "d", st.session_state.get(f"year_{k}", ""))
-    add_field("215", "a", st.session_state.get(f"pages_{k}", ""))
-    add_field("300", "a", st.session_state.get(f"notes_{k}", ""))
-    add_field("610", "a", st.session_state.get(f"keywords_{k}", ""))
-    add_field("330", "a", st.session_state.get(f"abstract_{k}", ""))
-
-    xml_str = minidom.parseString(ET.tostring(root)).toprettyxml(indent="  ")
-    return xml_str
-
-  # --- وضع الأزرار في الأعلى هنا قبل التبويبات (في المكان المضلل بالأصفر) ---
-  col_btn1, col_btn2 = st.columns(2)
-  with col_btn1:
-    st.download_button(
-        label="📥 تصدير ملف UNIMARC XML",
-        data=generate_unimarc_xml(),
-        file_name="pmb_notice.xml",
-        mime="application/xml",
-        use_container_width=True,
-    )
-  with col_btn2:
-    st.button(
-        "➕ إضافة كتاب جديد (تفريغ الحقول)",
-        use_container_width=True,
-        on_click=reset_form,
-        type="secondary",
-    )
-
-  st.write("")
-
-  # التبويبات تظهر الآن أسفل الأزرار مباشرة
   tab1, tab2, tab3, tab4 = st.tabs([
       "1️⃣ العام والمسؤولية",
       "2️⃣ النشر والتوزيع",
       "3️⃣ الوصف المادي",
       "4️⃣ التحليل الموضوعي",
   ])
+
+  k = st.session_state.uploader_key
 
   with tab1:
     title_val = st.text_input("العنوان الرئيسي (200a)*", key=f"title_{k}")
@@ -389,12 +343,61 @@ with col_right:
 
   with tab3:
     pages_val = st.text_input("عدد الصفحات (215a)", key=f"pages_{k}")
-    notes_val = st.text_area("ملاحظات عامة والطبعة (300a)", key=f"notes_{k}")
+    notes_val = st.text_area(
+        "ملاحظات عامة والطبعة (300a)", height=80, key=f"notes_{k}"
+    )
 
   with tab4:
     keywords_val = st.text_input(
         "الكلمات المفتاحية / رؤوس الموضوعات (610a)", key=f"keywords_{k}"
     )
     abstract_val = st.text_area(
-        "ملخص الكتاب / المستخلص (330a)", height=150, key=f"abstract_{k}"
+        "ملخص الكتاب / المستخلص (330a)", height=90, key=f"abstract_{k}"
+    )
+
+  # تصدير ملف UNIMARC XML
+  def generate_unimarc_xml():
+    root = ET.Element("unimarc")
+    notice = ET.SubElement(root, "notice")
+
+    def add_field(tag, code, value):
+      if value:
+        f = ET.SubElement(notice, "field", tag=tag)
+        s = ET.SubElement(f, "subfield", code=code)
+        s.text = str(value)
+
+    add_field("200", "a", title_val)
+    add_field("200", "e", subtitle_val)
+    add_field("010", "a", isbn_val)
+    add_field("200", "f", author_val)
+    add_field("701", "a", other_author_val)
+    add_field("210", "c", publisher_val)
+    add_field("210", "a", place_val)
+    add_field("210", "d", year_val)
+    add_field("215", "a", pages_val)
+    add_field("300", "a", notes_val)
+    add_field("610", "a", keywords_val)
+    add_field("330", "a", abstract_val)
+
+    xml_str = minidom.parseString(ET.tostring(root)).toprettyxml(indent="  ")
+    return xml_str
+
+  st.write("")
+
+  # --- إعادة الأزرار إلى الأسفل هنا ---
+  col_btn1, col_btn2 = st.columns(2)
+  with col_btn1:
+    st.download_button(
+        label="📥 تصدير ملف UNIMARC XML لـ PMB",
+        data=generate_unimarc_xml(),
+        file_name="pmb_notice.xml",
+        mime="application/xml",
+        use_container_width=True,
+    )
+  with col_btn2:
+    st.button(
+        "➕ إضافة كتاب جديد (تفريغ الحقول)",
+        use_container_width=True,
+        on_click=reset_form,
+        type="secondary",
     )
