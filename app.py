@@ -96,19 +96,20 @@ st.markdown(
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-bottom: 2rem;
+        margin-bottom: 1rem;
     }}
     .main-header {{
         background-color: #0E424B;
         border: 2px solid #3FE0D0;
         border-radius: 15px;
-        padding: 15px 40px;
+        padding: 15px 30px;
         text-align: center;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        width: 100%;
     }}
     .main-header h1 {{
         color: #ffffff !important;
-        font-size: 2.2rem;
+        font-size: 2rem;
         margin: 0;
         font-weight: 800;
     }}
@@ -188,17 +189,28 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# العنوان الرئيسي
-st.markdown(
-    """
-<div class="main-header-container">
-    <div class="main-header">
-        <h1>📚 مساعد الفهرسة والتحقق البصري لـ PMB</h1>
+# --- الهيدر العلوي: إطار العنوان وبجانبه الشعار في الأعلى ---
+header_col1, header_col2 = st.columns([1, 4], gap="medium")
+
+with header_col1:
+  # عرض الشعار في الأعلى يسار العنوان (في المكان المطلوب)
+  if os.path.exists("logo.jpg"):
+    st.image("logo.jpg", use_container_width=True)
+  elif os.path.exists("11PNG.jpg"):
+    st.image("11PNG.jpg", use_container_width=True)
+
+with header_col2:
+  # العنوان الرئيسي
+  st.markdown(
+      """
+    <div class="main-header-container">
+        <div class="main-header">
+            <h1>📚 مساعد الفهرسة والتحقق البصري لـ PMB</h1>
+        </div>
     </div>
-</div>
-""",
-    unsafe_allow_html=True,
-)
+    """,
+      unsafe_allow_html=True,
+  )
 
 # الشريط الجانبي
 with st.sidebar:
@@ -243,7 +255,6 @@ with col_left:
           ):
             genai.configure(api_key=api_key)
 
-            # استخدام الاصدار المعتمد حديثاً gemini-3.6-flash
             model = genai.GenerativeModel(
                 "gemini-3.6-flash",
                 generation_config={"response_mime_type": "application/json"},
@@ -303,19 +314,7 @@ with col_left:
   ):
     st.toast("تم تفريغ الصور والحقول بنجاح!", icon="🧹")
 
-  st.write("")
-  if os.path.exists("logo.jpg"):
-    st.image(
-        "logo.jpg",
-        caption="المكتبة المركزية - جامعة تيبازة",
-        use_container_width=True,
-    )
-  elif os.path.exists("11PNG.jpg"):
-    st.image(
-        "11PNG.jpg",
-        caption="المكتبة المركزية - جامعة تيبازة",
-        use_container_width=True,
-    )
+  # (تم تفريغ المكان السفلي هنا بناءً على طلبك)
 
 with col_right:
   st.subheader("📋 حقول التحقق المطابقة لـ PMB")
