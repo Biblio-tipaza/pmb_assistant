@@ -193,14 +193,12 @@ st.markdown(
 header_col1, header_col2 = st.columns([1, 4], gap="medium")
 
 with header_col1:
-  # عرض الشعار في الأعلى يسار العنوان (في المكان المطلوب)
   if os.path.exists("logo.jpg"):
     st.image("logo.jpg", use_container_width=True)
   elif os.path.exists("11PNG.jpg"):
     st.image("11PNG.jpg", use_container_width=True)
 
 with header_col2:
-  # العنوان الرئيسي
   st.markdown(
       """
     <div class="main-header-container">
@@ -285,7 +283,6 @@ with col_left:
             data = json.loads(response.text.strip())
             st.session_state.extracted_data = data
 
-            # حقن المستخرجات مباشرة داخل مفاتيح العناصر
             k = st.session_state.uploader_key
             st.session_state[f"title_{k}"] = data.get("title", "")
             st.session_state[f"subtitle_{k}"] = data.get("subtitle", "")
@@ -314,19 +311,65 @@ with col_left:
   ):
     st.toast("تم تفريغ الصور والحقول بنجاح!", icon="🧹")
 
-  # (تم تفريغ المكان السفلي هنا بناءً على طلبك)
-
 with col_right:
   st.subheader("📋 حقول التحقق المطابقة لـ PMB")
 
+  k = st.session_state.uploader_key
+
+  # تعريف دالة التصدير قبل استخدامها في الأزرار العلوية
+  def generate_unimarc_xml():
+    root = ET.Element("unimarc")
+    notice = ET.SubElement(root, "notice")
+
+    def add_field(tag, code, value):
+      if value:
+        f = ET.SubElement(notice, "field", tag=tag)
+        s = ET.SubElement(f, "subfield", code=code)
+        s.text = str(value)
+
+    add_field("200", "a", st.session_state.get(f"title_{k}", ""))
+    add_field("200", "e", st.session_state.get(f"subtitle_{k}", ""))
+    add_field("010", "a", st.session_state.get(f"isbn_{k}", ""))
+    add_field("200", "f", st.session_state.get(f"author_{k}", ""))
+    add_field("701", "a", st.session_state.get(f"other_{k}", ""))
+    add_field("210", "c", st.session_state.get(f"pub_{k}", ""))
+    add_field("210", "a", st.session_state.get(f"place_{k}", ""))
+    add_field("210", "d", st.session_state.get(f"year_{k}", ""))
+    add_field("215", "a", st.session_state.get(f"pages_{k}", ""))
+    add_field("300", "a", st.session_state.get(f"notes_{k}", ""))
+    add_field("610", "a", st.session_state.get(f"keywords_{k}", ""))
+    add_field("330", "a", st.session_state.get(f"abstract_{k}", ""))
+
+    xml_str = minidom.parseString(ET.tostring(root)).toprettyxml(indent="  ")
+    return xml_str
+
+  # --- وضع الأزرار في الأعلى هنا قبل التبويبات (في المكان المضلل بالأصفر) ---
+  col_btn1, col_btn2 = st.columns(2)
+  with col_btn1:
+    st.download_button(
+        label="📥 تصدير ملف UNIMARC XML",
+        data=generate_unimarc_xml(),
+        file_name="pmb_notice.xml",
+        mime="application/xml",
+        use_container_width=True,
+    )
+  with col_btn2:
+    st.button(
+        "➕ إضافة كتاب جديد (تفريغ الحقول)",
+        use_container_width=True,
+        on_click=reset_form,
+        type="secondary",
+    )
+
+  st.write("")
+
+  # التبويبات تظهر الآن أسفل الأزرار مباشرة
   tab1, tab2, tab3, tab4 = st.tabs([
       "1️⃣ العام والمسؤولية",
       "2️⃣ النشر والتوزيع",
       "3️⃣ الوصف المادي",
       "4️⃣ التحليل الموضوعي",
   ])
-
-  k = st.session_state.uploader_key
 
   with tab1:
     title_val = st.text_input("العنوان الرئيسي (200a)*", key=f"title_{k}")
@@ -354,50 +397,4 @@ with col_right:
     )
     abstract_val = st.text_area(
         "ملخص الكتاب / المستخلص (330a)", height=150, key=f"abstract_{k}"
-    )
-
-  # تصدير ملف UNIMARC XML
-  def generate_unimarc_xml():
-    root = ET.Element("unimarc")
-    notice = ET.SubElement(root, "notice")
-
-    def add_field(tag, code, value):
-      if value:
-        f = ET.SubElement(notice, "field", tag=tag)
-        s = ET.SubElement(f, "subfield", code=code)
-        s.text = str(value)
-
-    add_field("200", "a", title_val)
-    add_field("200", "e", subtitle_val)
-    add_field("010", "a", isbn_val)
-    add_field("200", "f", author_val)
-    add_field("701", "a", other_author_val)
-    add_field("210", "c", publisher_val)
-    add_field("210", "a", place_val)
-    add_field("210", "d", year_val)
-    add_field("215", "a", pages_val)
-    add_field("300", "a", notes_val)
-    add_field("610", "a", keywords_val)
-    add_field("330", "a", abstract_val)
-
-    xml_str = minidom.parseString(ET.tostring(root)).toprettyxml(indent="  ")
-    return xml_str
-
-  st.divider()
-
-  col_btn1, col_btn2 = st.columns(2)
-  with col_btn1:
-    st.download_button(
-        label="📥 تصدير ملف UNIMARC XML لـ PMB",
-        data=generate_unimarc_xml(),
-        file_name="pmb_notice.xml",
-        mime="application/xml",
-        use_container_width=True,
-    )
-  with col_btn2:
-    st.button(
-        "➕ إضافة كتاب جديد (تفريغ الحقول)",
-        use_container_width=True,
-        on_click=reset_form,
-        type="secondary",
     )
