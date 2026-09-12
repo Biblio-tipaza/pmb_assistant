@@ -1,5 +1,7 @@
 import json
 import os
+
+import urllib.parse
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 import google.generativeai as genai
@@ -13,9 +15,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed",
 )
-
-# النص في الشريط العلوي الافتراضي
-top_bar_text = "المكتبة المركزية لجامعة تيبازة - نظام الفهرسة الآلي"
 
 
 # دالة لإعادة تعيين النموذج لبدء كتاب جديد
@@ -35,70 +34,52 @@ if "uploader_key" not in st.session_state:
 
 # تطبيق التنسيقات المخصصة
 st.markdown(
-    f"""
+    """
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
     
-    html, body, [class*="css"] {{
+    html, body, [class*="css"] {
         font-family: 'Cairo', sans-serif;
         direction: rtl;
         text-align: right;
-    }}
+    }
 
-    /* تعديل وتلوين الشريط العلوي الافتراضي لـ Streamlit */
-    header[data-testid="stHeader"] {{
+    /* تعديل الهيدر المدمج لـ Streamlit */
+    header[data-testid="stHeader"] {
         background-color: #0E3A43 !important;
         border-bottom: 1px solid #3FE0D0 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        position: relative !important;
-    }}
+    }
     
-    /* إضافة النص المخصص في منتصف الشريط العلوي */
-    header[data-testid="stHeader"]::before {{
-        content: "{top_bar_text}";
-        color: #ffffff;
-        font-size: 1rem;
-        font-weight: 700;
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        white-space: nowrap;
-        pointer-events: none;
-    }}
-    
-    /* تغيير ألوان أيقونات الشريط العلوي وزر فتح القائمة الجانبية */
-    header[data-testid="stHeader"] * {{
+    header[data-testid="stHeader"] * {
         color: #ffffff !important;
-    }}
+    }
 
-    /* تقليص الهوامش العلوية وزيادة الهامش السفلي (5rem) لإتاحة المساحة لرؤية الأزرار عند التمرير */
-    .block-container {{
+    /* تقليص الهوامش العلوية وزيادة الهامش السفلي لرؤية الأزرار بوضوح */
+    .block-container {
         padding-top: 1rem !important;
         padding-bottom: 5rem !important;
-    }}
+    }
 
     /* خلفية التطبيق الرئيسية */
-    .stApp {{
+    .stApp {
         background-color: #1C889B;
         color: #ffffff;
-    }}
+    }
     
     /* القائمة الجانبية */
-    [data-testid="stSidebar"] {{
+    [data-testid="stSidebar"] {
         background-color: #14616F;
         color: #ffffff;
-    }}
+    }
     
     /* إطار العنوان الرئيسي */
-    .main-header-container {{
+    .main-header-container {
         display: flex;
         justify-content: center;
         align-items: center;
         margin-bottom: 0.5rem;
-    }}
-    .main-header {{
+    }
+    .main-header {
         background-color: #0E424B;
         border: 2px solid #3FE0D0;
         border-radius: 12px;
@@ -106,16 +87,16 @@ st.markdown(
         text-align: center;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         width: 100%;
-    }}
-    .main-header h1 {{
+    }
+    .main-header h1 {
         color: #ffffff !important;
         font-size: 1.8rem;
         margin: 0;
         font-weight: 800;
-    }}
+    }
     
-    /* تنسيق أزرار التبويبات (st.tabs) */
-    [data-testid="stTab"] {{
+    /* تنسيق أزرار التبويبات */
+    [data-testid="stTab"] {
         background-color: #0E424B !important;
         border: 1px solid #3FE0D0 !important;
         border-radius: 8px !important;
@@ -123,46 +104,43 @@ st.markdown(
         margin-left: 4px !important;
         color: #ffffff !important;
         transition: all 0.3s ease !important;
-    }}
+    }
 
-    [data-testid="stTab"] p {{
+    [data-testid="stTab"] p {
         color: #ffffff !important;
         font-weight: 700 !important;
         font-size: 0.9rem !important;
-    }}
+    }
 
-    /* التبويب النشط/المحدد */
-    [data-testid="stTab"][aria-selected="true"] {{
+    [data-testid="stTab"][aria-selected="true"] {
         background-color: #3FE0D0 !important;
         border-color: #ffffff !important;
-    }}
+    }
 
-    [data-testid="stTab"][aria-selected="true"] p {{
+    [data-testid="stTab"][aria-selected="true"] p {
         color: #0E424B !important;
-    }}
+    }
 
-    [data-testid="stTabs"] [data-baseweb="tab-highlight-title"] {{
+    [data-testid="stTabs"] [data-baseweb="tab-highlight-title"],
+    [data-testid="stTabs"] [data-baseweb="tab-border"] {
         display: none !important;
-    }}
-    [data-testid="stTabs"] [data-baseweb="tab-border"] {{
-        display: none !important;
-    }}
+    }
 
-    /* عناوين الحقول والتسميات */
-    label, .stMarkdown, p, span {{
+    /* عناوين الحقول والنصوص */
+    label, .stMarkdown, p, span {
         color: #ffffff !important;
-    }}
+    }
 
-    /* ألوان حقول الإدخال */
-    .stTextInput input, .stTextArea textarea {{
+    /* حقول الإدخال والقوائم المنسدلة */
+    .stTextInput input, .stTextArea textarea, div[data-baseweb="select"] {
         background-color: #ffffff !important;
         color: #000000 !important;
         font-weight: 600 !important;
         border-radius: 8px !important;
-    }}
+    }
 
-    /* ألوان الأزرار */
-    .stButton button, .stDownloadButton button, [data-testid="stFileUploader"] button {{
+    /* الأزرار */
+    .stButton button, .stDownloadButton button, [data-testid="stFileUploader"] button, a.custom-export-btn {
         background-color: #0E424B !important;
         color: #ffffff !important;
         border: 1px solid #3FE0D0 !important;
@@ -170,33 +148,30 @@ st.markdown(
         font-size: 0.95rem !important;
         border-radius: 8px !important;
         transition: all 0.3s ease !important;
-    }}
+        text-decoration: none !important;
+        display: inline-block;
+        text-align: center;
+        padding: 8px 16px;
+        width: 100%;
+    }
 
-    .stButton button:hover, .stDownloadButton button:hover, [data-testid="stFileUploader"] button:hover {{
+    .stButton button:hover, .stDownloadButton button:hover, [data-testid="stFileUploader"] button:hover, a.custom-export-btn:hover {
         background-color: #3FE0D0 !important;
         color: #0E424B !important;
         border-color: #ffffff !important;
-    }}
+    }
 
-    /* تحسين عرض الشعار المقلص */
-    .small-logo img {{
-        border-radius: 10px;
-        border: 2px solid #3FE0D0;
-        max-height: 80px;
-        object-fit: contain;
-    }}
-
-    /* فئة خاصة لإضافة مساحة فارغة في أسفل الصفحة قدرها 2 سم */
-    .bottom-spacer {{
+    /* مساحة فارغة في الأسفل */
+    .bottom-spacer {
         height: 2cm;
         width: 100%;
-    }}
+    }
 </style>
 """,
     unsafe_allow_html=True,
 )
 
-# --- الهيدر العلوي: تقليص حجم الشعار مع إطار العنوان ---
+# --- الهيدر العلوي ---
 header_col1, header_col2 = st.columns([0.6, 4], gap="small")
 
 with header_col1:
@@ -246,7 +221,7 @@ with col_left:
         st.image(img, caption=f"صفحة {idx+1}", use_container_width=True)
 
     if st.button(
-        "🤖 تحليل كل الصفحات واستخراج البيانات",
+        "🤖 تحليل كل الصفحات واستخرج البيانات",
         type="primary",
         use_container_width=True,
     ):
@@ -360,7 +335,6 @@ with col_right:
         "ملخص الكتاب / المستخلص (330a)", height=90, key=f"abstract_{k}"
     )
 
-  # تصدير ملف UNIMARC XML
   def generate_unimarc_xml():
     root = ET.Element("unimarc")
     notice = ET.SubElement(root, "notice")
@@ -389,17 +363,83 @@ with col_right:
 
   st.write("")
 
-  # --- الأزرار في الأسفل ---
   col_btn1, col_btn2 = st.columns(2)
+
   with col_btn1:
-    st.download_button(
-        label="📥 تصدير ملف UNIMARC XML لـ PMB",
-        data=generate_unimarc_xml(),
-        file_name="pmb_notice.xml",
-        mime="application/xml",
-        use_container_width=True,
+    # القائمة المنسدلة لاختيار جهة التصدير
+    export_option = st.selectbox(
+        "📤 اختر جهة تصدير الملف / البيانات:",
+        [
+            "تصدير الملف لـ PMB (UNIMARC XML)",
+            "تصدير الملف لمذكرات الماستر",
+            "تصدير الملف لكتاب خارجي",
+            "تصدير الملف لمطبوعة جامعية",
+            "تصدير الملف لأطروحة دكتوراه",
+        ],
+        key="export_selector",
     )
+
+    # تجهيز المعلمات لنقل البيانات عبر URL للواجهات المستهدفة
+    params = urllib.parse.urlencode({
+        "title": title_val,
+        "author": author_val,
+        "year": year_val,
+    })
+
+    if export_option == "تصدير الملف لـ PMB (UNIMARC XML)":
+      st.download_button(
+          label="📥 تحميل ملف UNIMARC XML",
+          data=generate_unimarc_xml(),
+          file_name="pmb_notice.xml",
+          mime="application/xml",
+          use_container_width=True,
+      )
+
+    elif export_option == "تصدير الملف لمذكرات الماستر":
+      target_url = (
+          f"https://bi-cu-tipaza.infinityfreeapp.com/add_data.php?{params}"
+      )
+      st.markdown(
+          f'<a href="{target_url}" target="_blank" class="custom-export-btn">🚀'
+          " فتح واجهة إضافة مذكرة ماستر</a>",
+          unsafe_allow_html=True,
+      )
+
+    elif export_option == "تصدير الملف لكتاب خارجي":
+      target_url = (
+          "https://bi-cu-tipaza.infinityfreeapp.com/add_external_book.php?"
+          f"{params}"
+      )
+      st.markdown(
+          f'<a href="{target_url}" target="_blank" class="custom-export-btn">🚀'
+          " فتح واجهة إضافة كتاب خارجي</a>",
+          unsafe_allow_html=True,
+      )
+
+    elif export_option == "تصدير الملف لمطبوعة جامعية":
+      target_url = (
+          "https://bi-cu-tipaza.infinityfreeapp.com/add_publication.php?"
+          f"{params}"
+      )
+      st.markdown(
+          f'<a href="{target_url}" target="_blank" class="custom-export-btn">🚀'
+          " فتح واجهة إضافة مطبوعة</a>",
+          unsafe_allow_html=True,
+      )
+
+    elif export_option == "تصدير الملف لأطروحة دكتوراه":
+      target_url = (
+          "https://bi-cu-tipaza.infinityfreeapp.com/add_university_thesis.php?"
+          f"{params}"
+      )
+      st.markdown(
+          f'<a href="{target_url}" target="_blank" class="custom-export-btn">🚀'
+          " فتح واجهة إضافة أطروحة دكتوراه</a>",
+          unsafe_allow_html=True,
+      )
+
   with col_btn2:
+    st.write("<div style='height: 28px;'></div>", unsafe_allow_html=True)
     st.button(
         "➕ إضافة كتاب جديد (تفريغ الحقول)",
         use_container_width=True,
@@ -407,5 +447,4 @@ with col_right:
         type="secondary",
     )
 
-# --- إضافة مسافة فارغة أسفل الصفحة بقدر 2 سم لإكمال التمرير بحرية ---
 st.markdown('<div class="bottom-spacer"></div>', unsafe_allow_html=True)
