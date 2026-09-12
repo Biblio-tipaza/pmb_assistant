@@ -152,6 +152,7 @@ st.markdown(
         text-align: center;
         padding: 8px 16px;
         width: 100%;
+        box-sizing: border-box;
     }
 
     .stButton button:hover, .stDownloadButton button:hover, [data-testid="stFileUploader"] button:hover, a.custom-export-btn:hover {
@@ -365,7 +366,6 @@ with col_right:
   col_btn1, col_btn2 = st.columns(2)
 
   with col_btn1:
-    # القائمة المنسدلة لاختيار جهة التصدير
     export_option = st.selectbox(
         "📤 اختر جهة تصدير الملف / البيانات:",
         [
@@ -378,7 +378,6 @@ with col_right:
         key="export_selector",
     )
 
-    # روابط الواجهات المستهدفة
     urls = {
         "تصدير البيانات لمذكرات الماستر": (
             "https://bi-cu-tipaza.infinityfreeapp.com/add_data.php"
@@ -403,7 +402,6 @@ with col_right:
           use_container_width=True,
       )
     else:
-      # تجهيز البيانات كـ JSON لنسخها في الحافظة
       export_payload = json.dumps({
           "title": title_val,
           "subtitle": subtitle_val,
@@ -422,16 +420,17 @@ with col_right:
       target_link = urls[export_option]
       btn_title = f"🚀 {export_option}"
 
-      if st.button(btn_title, use_container_width=True):
-        js_cmd = f"""
-                <script>
-                navigator.clipboard.writeText({json.dumps(export_payload)}).then(function() {{
-                    window.open('{target_link}', '_blank');
-                }});
-                </script>
-                """
-        st.components.v1.html(js_cmd, height=0)
-        st.toast("تم نسخ البيانات وفتح الواجهة بنجاح!", icon="📋")
+      js_copy = f"""
+            <script>
+            navigator.clipboard.writeText({json.dumps(export_payload)});
+            </script>
+            """
+      st.components.v1.html(js_copy, height=0)
+
+      st.markdown(
+          f'<a href="{target_link}" target="_blank" class="custom-export-btn">{btn_title}</a>',
+          unsafe_allow_html=True,
+      )
 
   with col_btn2:
     st.write("<div style='height: 28px;'></div>", unsafe_allow_html=True)
