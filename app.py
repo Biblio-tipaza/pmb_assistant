@@ -8,16 +8,58 @@ from PIL import Image
 import streamlit as st
 
 # ==========================================
-# 1. إعدادات الصفحة الأساسية
+# 1. إعدادات الصفحة والتنسيق التركوازي الأصلي
 # ==========================================
 st.set_page_config(
-    page_title="مساعد الفهرسة واستخراج البيانات",
+    page_title="مساعد الفهرسة والتحليل الآلي",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
+# استعادة ألوان خلفية الواجهة والأزرار التركوازية
+st.markdown(
+    """
+    <style>
+    /* خلفية التطبيق الرئيسية */
+    .stApp {
+        background-color: #177383 !important;
+        color: white !important;
+    }
+    
+    /* تنسيق أزرار Streamlit */
+    .stButton>button, .stDownloadButton>button {
+        background-color: #0f4c5c !important;
+        color: #ffffff !important;
+        border: 1px solid #2b9348 !important;
+        border-radius: 8px !important;
+        font-weight: bold !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .stButton>button:hover, .stDownloadButton>button:hover {
+        background-color: #2b9348 !important;
+        color: #ffffff !important;
+        border-color: #ffffff !important;
+    }
+
+    /* حقول الإدخال والقوائم المنسدلة */
+    div[data-baseweb="select"] > div, div[data-baseweb="input"] > div {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border-radius: 6px !important;
+    }
+    
+    label {
+        color: #ffffff !important;
+        font-weight: bold !important;
+    }
+    </style>
+""",
+    unsafe_allow_html=True,
+)
+
 # ==========================================
-# 2. الواجهة الرئيسية واستخراج البيانات (قيم تجريبية)
+# 2. الواجهة الرئيسية وحقول البيانات
 # ==========================================
 st.title("📚 مساعد الفهرسة والتحليل الآلي")
 st.write("---")
@@ -28,7 +70,8 @@ with col1:
   st.subheader("📝 البيانات المستخرجة")
 
   title_val = st.text_input(
-      "العنوان الرئيسي", value="دراسة قياسية لأثر التكنولوجيا المالية على النمو الاقتصادي في الجزائر"
+      "العنوان الرئيسي",
+      value="دراسة قياسية لأثر التكنولوجيا المالية على النمو الاقتصادي في الجزائر",
   )
   subtitle_val = st.text_input("العنوان الفرعي (200e)", value="")
   isbn_val = st.text_input("الرقم الدولي ISBN (010a)", value="")
@@ -43,13 +86,13 @@ with col1:
 
 with col2:
   st.subheader("🖼️ معاينة الغلاف / الوثيقة")
-  # يمكنك وضع st.image() الخاص بك هنا
   st.info("معاينة الوثيقة المعالجة عبر الذكاء الاصطناعي")
 
 st.write("---")
 
+
 # ==========================================
-# 3. دالة وهمية لتوليد ملف UNIMARC (لتجنب الخطأ)
+# 3. دالة توليد XML لـ PMB
 # ==========================================
 def generate_unimarc_xml():
   xml_data = f"""<?xml version="1.0" encoding="UTF-8"?>
@@ -68,16 +111,15 @@ def generate_unimarc_xml():
 
 
 # ==========================================
-# 4. قسم التصدير والقائمة المنسدلة المحدثة
+# 4. قسم التصدير وقائمة الخيارات المحدثة
 # ==========================================
-st.subheader("📤 تصدير البيانات إلى الأنظمة والواجهات")
+st.subheader("📤 اختر جهة تصدير الملف / البيانات:")
 
 btn_col1, btn_col2 = st.columns([1, 1])
 
 with btn_col1:
-  # القائمة المنسدلة لاختيار جهة التصدير
   export_option = st.selectbox(
-      "اختر جهة تصدير البيانات:",
+      "جهة التصدير:",
       [
           "تصدير الملف لـ PMB (UNIMARC XML)",
           "تصدير البيانات لمذكرات الماستر",
@@ -86,12 +128,10 @@ with btn_col1:
           "تصدير البيانات لأطروحة دكتوراه",
       ],
       key="export_selector",
+      label_visibility="collapsed",
   )
 
 with btn_col2:
-  st.write("##")  # محاذاة عمودية للأزرار
-
-  # قاموس الروابط الخاصة بواجهات PHP
   urls = {
       "تصدير البيانات لمذكرات الماستر": (
           "https://bi-cu-tipaza.infinityfreeapp.com/add_data.php"
@@ -108,7 +148,6 @@ with btn_col2:
   }
 
   if export_option == "تصدير الملف لـ PMB (UNIMARC XML)":
-    # زر التحميل الخاص بـ PMB
     st.download_button(
         label="📥 تحميل ملف UNIMARC XML",
         data=generate_unimarc_xml(),
@@ -117,7 +156,6 @@ with btn_col2:
         use_container_width=True,
     )
   else:
-    # تجهيز حزمة البيانات بتنسيق JSON لنقلها للحافظة
     export_payload = json.dumps({
         "title": title_val,
         "author": author_val,
@@ -129,9 +167,7 @@ with btn_col2:
     target_link = urls[export_option]
     btn_title = f"🚀 {export_option}"
 
-    # زر يغير اسمه ديناميكياً حسب اختيار القائمة
     if st.button(btn_title, use_container_width=True):
-      # كود JavaScript لنسخ البيانات للحافظة وفتح واجهة PHP في تبويب جديد
       js_cmd = f"""
             <script>
             navigator.clipboard.writeText({json.dumps(export_payload)}).then(function() {{
