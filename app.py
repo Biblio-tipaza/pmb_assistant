@@ -91,7 +91,7 @@ st.markdown(
         justify-content: center;
         align-items: center;
         width: 100%;
-        margin-top: 0.8rem; /* إضافة مسافة رأسية إضافية فوق الإطار */
+        margin-top: 0.8rem;
         box-sizing: border-box;
     }
     .main-header {
@@ -207,10 +207,20 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --- الهيدر العلوي ---
-header_col1, header_col2 = st.columns([4.2, 1], gap="medium")
+# --- الهيدر العلوي (الشعار على اليمين وإطار العنوان على اليسار) ---
+header_col1, header_col2 = st.columns([1, 4.2], gap="medium")
 
+# العمود الأول (جهة اليمين في واجهة RTL): الشعار
 with header_col1:
+    st.markdown('<div class="logo-img-container">', unsafe_allow_html=True)
+    if os.path.exists("logo.jpg"):
+        st.image("logo.jpg", use_container_width=True)
+    elif os.path.exists("11PNG.jpg"):
+        st.image("11PNG.jpg", use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# العمود الثاني (جهة اليسار): إطار العنوان
+with header_col2:
     st.markdown(
         """
     <div class="main-header-container">
@@ -221,14 +231,6 @@ with header_col1:
     """,
         unsafe_allow_html=True,
     )
-
-with header_col2:
-    st.markdown('<div class="logo-img-container">', unsafe_allow_html=True)
-    if os.path.exists("logo.jpg"):
-        st.image("logo.jpg", use_container_width=True)
-    elif os.path.exists("11PNG.jpg"):
-        st.image("11PNG.jpg", use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # الشريط الجانبي
 with st.sidebar:
