@@ -43,19 +43,33 @@ st.markdown(
         text-align: right;
     }
 
-    /* تعديل الهيدر المدمج لـ Streamlit */
+    /* تعديل الهيدر المدمج لـ Streamlit لإظهار العنوان العلوي بنجاح */
     header[data-testid="stHeader"] {
         background-color: #0E3A43 !important;
         border-bottom: 1px solid #3FE0D0 !important;
     }
     
+    /* إضافة النص في منتصف الهيدر العلوي كما في الصورة 2 */
+    header[data-testid="stHeader"]::before {
+        content: "المكتبة المركزية لجامعة تيبازة - نظام الفهرسة الآلي";
+        color: #ffffff;
+        font-family: 'Cairo', sans-serif;
+        font-weight: 700;
+        font-size: 1.05rem;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        top: 12px;
+        white-space: nowrap;
+    }
+
     header[data-testid="stHeader"] * {
         color: #ffffff !important;
     }
 
     /* تقليص الهوامش العلوية وزيادة الهامش السفلي لرؤية الأزرار بوضوح */
     .block-container {
-        padding-top: 1rem !important;
+        padding-top: 1.5rem !important;
         padding-bottom: 5rem !important;
     }
 
@@ -89,9 +103,17 @@ st.markdown(
     }
     .main-header h1 {
         color: #ffffff !important;
-        font-size: 1.8rem;
+        font-size: 1.7rem;
         margin: 0;
         font-weight: 800;
+    }
+
+    /* تنسيق عرض الشعار بالكامل دون قص */
+    .logo-img-container img {
+        border-radius: 12px;
+        object-fit: contain !important;
+        max-height: 85px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.25);
     }
     
     /* تنسيق أزرار التبويبات */
@@ -172,13 +194,15 @@ st.markdown(
 )
 
 # --- الهيدر العلوي ---
-header_col1, header_col2 = st.columns([0.6, 4], gap="small")
+header_col1, header_col2 = st.columns([1, 5], gap="small")
 
 with header_col1:
+    st.markdown('<div class="logo-img-container">', unsafe_allow_html=True)
     if os.path.exists("logo.jpg"):
-        st.image("logo.jpg", width=110)
+        st.image("logo.jpg", use_container_width=True)
     elif os.path.exists("11PNG.jpg"):
-        st.image("11PNG.jpg", width=110)
+        st.image("11PNG.jpg", use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with header_col2:
     st.markdown(
