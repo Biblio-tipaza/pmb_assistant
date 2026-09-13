@@ -43,13 +43,13 @@ st.markdown(
         text-align: right;
     }
 
-    /* تعديل الهيدر المدمج لـ Streamlit لإظهار العنوان العلوي بنجاح */
+    /* تعديل الهيدر المدمج لـ Streamlit لإظهار العنوان العلوي */
     header[data-testid="stHeader"] {
         background-color: #0E3A43 !important;
         border-bottom: 1px solid #3FE0D0 !important;
     }
     
-    /* إضافة النص في منتصف الهيدر العلوي كما في الصورة 2 */
+    /* نص العنوان في الشريط الداكن */
     header[data-testid="stHeader"]::before {
         content: "المكتبة المركزية لجامعة تيبازة - نظام الفهرسة الآلي";
         color: #ffffff;
@@ -67,9 +67,9 @@ st.markdown(
         color: #ffffff !important;
     }
 
-    /* تقليص الهوامش العلوية وزيادة الهامش السفلي لرؤية الأزرار بوضوح */
+    /* توسيع الهامش العلوي لمحتوى الصفحة لإتاحة مسافة فارغة 1 سم تحت الشريط */
     .block-container {
-        padding-top: 1.5rem !important;
+        padding-top: 3.8rem !important; /* مسافة فارغة أعلى الإطار حوالي 1 سم */
         padding-bottom: 5rem !important;
     }
 
@@ -90,29 +90,43 @@ st.markdown(
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-bottom: 0.5rem;
+        width: 100%;
+        margin-top: 0.8rem; /* إضافة مسافة رأسية إضافية فوق الإطار */
+        box-sizing: border-box;
     }
     .main-header {
         background-color: #0E424B;
         border: 2px solid #3FE0D0;
         border-radius: 12px;
-        padding: 10px 20px;
+        padding: 10px 15px;
         text-align: center;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
     }
     .main-header h1 {
         color: #ffffff !important;
-        font-size: 1.7rem;
+        font-size: 1.5rem;
         margin: 0;
         font-weight: 800;
+        white-space: nowrap;
     }
 
-    /* تنسيق عرض الشعار بالكامل دون قص */
+    /* تنسيق عرض الشعار بالكامل */
+    .logo-img-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        margin-top: 0.8rem;
+    }
     .logo-img-container img {
         border-radius: 12px;
         object-fit: contain !important;
-        max-height: 85px;
+        max-width: 100%;
+        height: auto;
+        max-height: 80px;
         box-shadow: 0 4px 10px rgba(0,0,0,0.25);
     }
     
@@ -194,17 +208,9 @@ st.markdown(
 )
 
 # --- الهيدر العلوي ---
-header_col1, header_col2 = st.columns([1, 5], gap="small")
+header_col1, header_col2 = st.columns([4.2, 1], gap="medium")
 
 with header_col1:
-    st.markdown('<div class="logo-img-container">', unsafe_allow_html=True)
-    if os.path.exists("logo.jpg"):
-        st.image("logo.jpg", use_container_width=True)
-    elif os.path.exists("11PNG.jpg"):
-        st.image("11PNG.jpg", use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-with header_col2:
     st.markdown(
         """
     <div class="main-header-container">
@@ -215,6 +221,14 @@ with header_col2:
     """,
         unsafe_allow_html=True,
     )
+
+with header_col2:
+    st.markdown('<div class="logo-img-container">', unsafe_allow_html=True)
+    if os.path.exists("logo.jpg"):
+        st.image("logo.jpg", use_container_width=True)
+    elif os.path.exists("11PNG.jpg"):
+        st.image("11PNG.jpg", use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # الشريط الجانبي
 with st.sidebar:
